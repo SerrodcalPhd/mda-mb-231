@@ -1,6 +1,7 @@
 import numpy as np
 import plotly.graph_objects as go
 
+iterations = 1000
 rows = 34
 cols = 45
 n_cols_cells = 11
@@ -75,3 +76,6 @@ def plot_grid(cells):
     fig.show()
 
 plot_grid(cells)
+
+for iteration in range(iterations):
+    pass
