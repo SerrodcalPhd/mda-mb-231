@@ -38,8 +38,8 @@ def plot_grid(cells):
         ir.append(cell.ir)
 
     fig = go.Figure(data=go.Scattergl(
-        x = x,
-        y = y,
+        x = y, #cols
+        y = x, #rows
         mode='markers',
         marker=dict(
             color=ir,
