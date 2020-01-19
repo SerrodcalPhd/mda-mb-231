@@ -1,5 +1,4 @@
 import numpy as np
-#import matplotlib.pyplot as plt
 import plotly.graph_objects as go
 
 rows = 34
@@ -27,6 +26,30 @@ def generate_region(col_origin, col_limit, row_origin=0, row_limit=rows):
 generate_region(0,11)
 generate_region(34,45)
 
+def neighborhood(position, cells, rows, cols):
+    free = []
+    x,y = position[0],position[1]
+    if 0<=x-1<rows and 0<=y<cols and (not (x-1,y) in cells): #Left
+        free.append((x-1,y))
+    if 0<=x+1<rows and 0<=y<cols and (not (x+1,y) in cells): #Right
+        free.append((x+1,y))
+    if 0<=x<rows and 0<=y-1<cols and (not (x,y-1) in cells): #Down
+        free.append((x,y-1))
+    if 0<=x<rows and 0<=y+1<cols and (not (x,y+1) in cells): #Up
+        free.append((x,y+1))
+    if 0<=x-1<rows and 0<=y-1<cols and (not (x-1,y-1) in cells): #DownLeft
+        free.append((x-1,y-1))
+    if 0<=x+1<rows and 0<=y-1<cols and (not (x+1,y-1) in cells): #DownRight
+        free.append((x+1,y-1))
+    if 0<=x-1<rows and 0<=y+1<cols and (not (x-1,y+1) in cells): #UpLeft
+        free.append((x-1,y+1))
+    if 0<=x+1<rows and 0<=y+1<cols and (not (x+1,y+1) in cells): #UpRight
+        free.append((x+1,y+1))
+    return free
+
+free = neighborhood((10,1), cells, rows, cols)
+print(free)
+
 def plot_grid(cells):
     x = []
     y = []
@@ -44,7 +67,8 @@ def plot_grid(cells):
         marker=dict(
             color=ir,
             colorscale='Viridis',
-            line_width=1
+            line_width=1,
+            showscale=True
         )
     ))
 
