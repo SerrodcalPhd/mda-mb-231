@@ -1,5 +1,6 @@
 import numpy as np
 import plotly.graph_objects as go
+from random import randint
 
 iterations = 1000
 rows = 34
@@ -75,7 +76,20 @@ def plot_grid(cells):
 
     fig.show()
 
-plot_grid(cells)
+#plot_grid(cells)
+
+def select_position_from_neighborhood(free):
+    return free[randint(0, len(free)-1)]
 
 for iteration in range(iterations):
-    pass
+    for position in cells:
+        candidates_positions = neighborhood(position, cells, rows, cols)
+        if candidates_positions:
+            next_position = select_position_from_neighborhood(candidates_positions)
+            cell = cells[position]
+            del cells[position]
+            cell.position = (next_position[0], next_position[1])
+            cells[next_position] = cell
+
+plot_grid(cells)
+#print(len(cells))
