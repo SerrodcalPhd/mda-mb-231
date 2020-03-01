@@ -78,6 +78,26 @@ def plot_grid(cells):
 
 #plot_grid(cells)
 
+def plot_histogram(grid):
+    # Axis = 0 to sum across the rows, so we'll get the sum per cols
+    sum = np.sum(grid, axis = 0)
+    #fig = go.Figure(data=[go.Histogram(x=sum, bargap=0.1)])
+    #fig.update_layout(bargap=0.2)#, bargroupgap=0.1
+
+    """y = np.arange(45)
+
+    fig = go.Figure()
+    fig.add_trace(go.Histogram(
+        histfunc="count",
+        #y=y,
+        x=sum
+    ))
+    fig.update_layout(bargap=0.1)
+    fig.show()"""
+
+    fig = go.Figure([go.Bar(x=np.arange(45), y=sum)])
+    fig.show()
+
 def select_position_from_neighborhood(free):
     return free[randint(0, len(free)-1)]
 
@@ -88,8 +108,11 @@ for iteration in range(iterations):
             next_position = select_position_from_neighborhood(candidates_positions)
             cell = cells[position]
             del cells[position]
+            grid[position] = 0
             cell.position = (next_position[0], next_position[1])
             cells[next_position] = cell
+            grid[next_position] = 1
 
 plot_grid(cells)
 #print(len(cells))
+plot_histogram(grid)
