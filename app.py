@@ -2,13 +2,15 @@ import numpy as np
 import plotly.graph_objects as go
 from random import randint, random
 from plotly.subplots import make_subplots
+import copy
 
-iterations = 200
+iterations = 100
 rows = 34
 cols = 45
 n_cols_cells = 11
 n_cells = (n_cols_cells * 2) * rows
-p = 0.25
+p = 0.25 # Depending on IR
+mitosis = 0.01 # Depending on IR
 sampling = 10
 
 grid = np.zeros((rows, cols), dtype=int)
@@ -18,16 +20,18 @@ cells = {}
 column_evolution = {i:[] for i in range(cols)}
 
 class Cell:
+    def __init__(self, position):
+        self.position = position # (row, col)
+        self.path = [position] # [(0,0),(0,1),(1,1),...]
 
-    def __init__(self, position, ir):
-        self.position = position
-        self.ir = ir
+    def add_step(self, step):
+        self.path.append(step)
 
 def generate_region(col_origin, col_limit, row_origin=0, row_limit=rows):
     for i in range(row_origin, row_limit):
         for j in range(col_origin, col_limit):
             position = (i,j)
-            cells[position] = Cell(position, 0)
+            cells[position] = Cell(position)
             grid[position] = 1
 
 generate_region(0,11)
@@ -60,20 +64,16 @@ def neighborhood(position, cells, rows, cols):
 def plot_grid(cells):
     x = []
     y = []
-    ir = []
     for pos in cells:
         cell = cells[pos]
         x.append(cell.position[0])
         y.append(cell.position[1])
-        ir.append(cell.ir)
 
     fig = go.Figure(data=go.Scattergl(
         x = y, #cols
         y = x, #rows
         mode='markers',
         marker=dict(
-            color=ir,
-            colorscale='Viridis',
             line_width=1,
             showscale=True
         )
@@ -143,18 +143,38 @@ def plot_column_evolution(all_data):
 def select_position_from_neighborhood(free):
     return free[randint(0, len(free)-1)]
 
+print("Initial cells: " + str(len(cells)))
+
+movement_counter = 0
+mitosis_counter = 0
+
 for iteration in range(iterations):
+    next_cells = copy.copy(cells)
+    print("Iteration " + str(iteration) + ", number of cells " + str(len(next_cells)))
     for position in cells:
-        if random() < p:
-            candidates_positions = neighborhood(position, cells, rows, cols)
-            if candidates_positions:
+        candidates_positions = neighborhood(position, next_cells, rows, cols)
+        if candidates_positions:
+            if random() < p: # Movement:
+                movement_counter += 1
+                #print("Iteration " + str(iteration) + ", movement")
                 next_position = select_position_from_neighborhood(candidates_positions)
-                cell = cells[position]
-                del cells[position]
+                cell = next_cells[position]
+                del next_cells[position]
                 grid[position] = 0
                 cell.position = (next_position[0], next_position[1])
-                cells[next_position] = cell
+                cell.add_step(next_position)
+                next_cells[next_position] = cell
                 grid[next_position] = 1
+            elif random() < mitosis:
+                mitosis_counter += 1
+                #print("Iteration " + str(iteration) + ", mitosis")
+                next_position = select_position_from_neighborhood(candidates_positions)
+                daughter = Cell(next_position)
+                next_cells[next_position] = daughter
+                grid[next_position] = 1
+
+    cells = copy.copy(next_cells)
+
     if iteration % sampling == 0:
         sum = np.sum(grid, axis = 0)
         for i in range(cols):
@@ -164,6 +184,8 @@ for iteration in range(iterations):
             column_evolution[i] = data
 
 plot_grid(cells)
-#print(len(cells))
+print("Number of movements: " + str(movement_counter))
+print("Number of mitosis: " + str(mitosis_counter))
+print("Final cells: " + str(len(cells)))
 plot_histogram(grid)
 plot_column_evolution(column_evolution)
